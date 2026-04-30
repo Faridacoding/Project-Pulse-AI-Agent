@@ -2,6 +2,9 @@
 
 An intelligent workflow automation tool that transforms unstructured meeting notes into structured project insights and professional stakeholder newsletters using the Claude Agent SDK.
 
+## Demo
+https://youtu.be/x3K7bJX9zRo 
+
 ## 🚀 Overview
 
 This application demonstrates a full-stack AI integration designed to automate the bridge between raw meeting data and professional communication. It leverages Claude to perform cognitive tasks that typically take project managers significant time.
