@@ -8,7 +8,7 @@ This application demonstrates a full-stack AI integration designed to automate t
 
 ### Key Features
 - **Intelligent Analysis**: Extracts project status, progress percentages, and high-priority items from messy text.
-- **Structured Output**: Converts unstructured notes into a clean, actionable dashboard and PPT slide decks.
+- **Structured Output**: Converts unstructured notes into a clean, actionable dashboard and PPT slide decks, Stakholder newsletter and Calendar management for meeting cadence.
 - **Automated Communication**: Generates a draft stakeholder newsletter based on the analyzed data.
 - **Modern Tech Stack**: Built with React, TypeScript, Express, and Tailwind CSS.
 
