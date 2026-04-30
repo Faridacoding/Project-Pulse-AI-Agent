@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Pulse — Architecture Diagram</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: #f8fafc;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .diagram-container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 1100px;
+      margin: 0 auto 2rem auto;
+      overflow-x: auto;
+    }
+    .legend {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .legend-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+    }
+    .legend-item .dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+    .legend-item .label { color: #cbd5e1; }
+    .legend-item .desc { color: #64748b; margin-top: 0.25rem; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h1>Project Pulse — Architecture Diagram</h1>
+  <p class="subtitle">Full-stack AI-powered project management &amp; meeting intelligence platform</p>
+
+  <div class="diagram-container">
+    <div class="mermaid">
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#1e40af",
+    "primaryTextColor": "#f8fafc",
+    "primaryBorderColor": "#3b82f6",
+    "lineColor": "#64748b",
+    "secondaryColor": "#0f172a",
+    "tertiaryColor": "#1e293b",
+    "background": "#1e293b",
+    "mainBkg": "#1e293b",
+    "nodeBorder": "#475569",
+    "clusterBkg": "#0f172a",
+    "titleColor": "#f8fafc",
+    "edgeLabelBackground": "#1e293b",
+    "fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+  }
+}}%%
+
+flowchart TB
+
+  %% ── USER ──────────────────────────────────────────────────────────────────
+  USER(["👤 User / Browser"])
+
+  %% ── FRONTEND ──────────────────────────────────────────────────────────────
+  subgraph FE["⚛️  Frontend  ·  React 19 + TypeScript + Tailwind CSS  ·  Vite 6"]
+    direction TB
+    APP["App.tsx\nTab navigation &amp; state router"]
+    MA["MeetingAnalyzer.tsx\nFile upload · AI analysis\nDashboard · PPTX export"]
+    NA["NewsletterArchive.tsx\nDraft · Archive\nSave to Drive"]
+    SM["ScheduleMeeting.tsx\nCalendar events · Meet link\nEmail invitations · AI agenda"]
+    DB["DriveButton.tsx\nReusable save-to-Drive widget"]
+    SVC["geminiService.ts\nAPI client layer  (fetch wrapper)"]
+  end
+
+  %% ── BACKEND ───────────────────────────────────────────────────────────────
+  subgraph BE["🖥️  Backend  ·  Express.js + Node.js + TypeScript"]
+    direction TB
+
+    subgraph ROUTES_AI["AI Routes"]
+      R_ANA["POST /api/analyze\nMeeting note analysis"]
+      R_NLD["POST /api/newsletters/draft\nNewsletter generation"]
+      R_AGD["POST /api/calendar/generate-agenda\nAgenda generation"]
+    end
+
+    subgraph ROUTES_NL["Newsletter Routes"]
+      R_NLG["GET /api/newsletters"]
+      R_NLS["POST /api/newsletters"]
+      R_NLD2["DELETE /api/newsletters/:id"]
+    end
+
+    subgraph ROUTES_GOOG["Google Routes"]
+      R_AUTH["GET /api/auth/google/url\nGET /api/auth/google/callback\nGET /api/auth/google/status\nPOST /api/auth/google/revoke"]
+      R_DRV["POST /api/drive/save\nPOST /api/drive/create-slides\nGET /api/slides/preview/:id\nGET /api/slides/download/:id\nPOST /api/drive/save-slide"]
+      R_CAL["POST /api/calendar/create-event\nGET /api/calendar/events"]
+    end
+
+    subgraph ROUTES_EMAIL["Email Route"]
+      R_INV["POST /api/calendar/send-invites\nICS attachment + HTML email"]
+    end
+
+    RL["express-rate-limit\nGlobal: 60/min\nAI: 5/min\nDrive: 20/min\nCalendar: 10/min"]
+    UPL["POST /api/upload-file\nmulter + mammoth (.docx→text)"]
+  end
+
+  %% ── STORAGE ───────────────────────────────────────────────────────────────
+  subgraph STORE["💾  Server-side Storage"]
+    FS_NL["/newsletters/\nJSON files  (archived newsletters)"]
+    FS_TK[".google-tokens.json\nOAuth2 tokens  (auto-refresh)"]
+    MEM["In-memory Map\nSlide buffers  (1 hr TTL)"]
+  end
+
+  %% ── EXTERNAL SERVICES ─────────────────────────────────────────────────────
+  subgraph EXT["☁️  External Services"]
+    CLAUDE["🤖 Claude AI\n@anthropic-ai/claude-agent-sdk\nMeeting analysis · Newsletters · Agendas"]
+    GDRIVE["📁 Google Drive API v3\nFile upload · Google Docs\nProject Pulse folder"]
+    GCAL["📅 Google Calendar API v3\nEvent creation · Meet links\nAttendee management"]
+    SMTP["✉️ SMTP / Gmail\nnodemailer\nEmail invitations + ICS"]
+    PPTX["📊 pptxgenjs\nSlide deck generation\n(in-process library)"]
+  end
+
+  %% ── DATA MODELS ───────────────────────────────────────────────────────────
+  subgraph TYPES["📐  Core Types  ·  types.ts"]
+    direction LR
+    T1["Project\nname · status · priority\nprogress · dueDate · summary"]
+    T2["AnalysisResult\nprojects[] · counts\nnewsletter · overallStatus"]
+    T3["Newsletter / ArchivedNewsletter\nsubject · sections[]\nintroduction · conclusion"]
+    T4["MeetingEvent / CalendarEventResult\ntitle · attendees · agenda\neventLink · meetLink"]
+  end
+
+  %% ── CONNECTIONS ───────────────────────────────────────────────────────────
+
+  USER -- "Interacts with UI" --> APP
+  APP --> MA & NA & SM
+  MA & NA & SM --> DB
+  MA & NA & SM & DB --> SVC
+
+  SVC -- "HTTP /api/*" --> BE
+
+  BE --> RL
+  BE --> UPL
+  BE --> ROUTES_AI & ROUTES_NL & ROUTES_GOOG & ROUTES_EMAIL
+
+  ROUTES_AI --> CLAUDE
+  ROUTES_NL --> FS_NL
+  ROUTES_GOOG --> R_AUTH & R_DRV & R_CAL
+  R_AUTH --> FS_TK
+  R_DRV --> GDRIVE
+  R_DRV --> MEM
+  R_DRV --> PPTX
+  R_CAL --> GCAL
+  ROUTES_EMAIL --> SMTP
+
+  ROUTES_AI -.-> TYPES
+  SVC -.-> TYPES
+
+  %% ── STYLES ────────────────────────────────────────────────────────────────
+  classDef user      fill:#7c3aed,stroke:#a78bfa,color:#fff
+  classDef fe        fill:#1d4ed8,stroke:#60a5fa,color:#fff
+  classDef be        fill:#065f46,stroke:#34d399,color:#fff
+  classDef ext       fill:#92400e,stroke:#fbbf24,color:#fff
+  classDef store     fill:#1e3a5f,stroke:#7dd3fc,color:#fff
+  classDef types     fill:#3b1f6e,stroke:#c084fc,color:#fff
+  classDef ratelimit fill:#7f1d1d,stroke:#f87171,color:#fff
+
+  class USER user
+  class APP,MA,NA,SM,DB,SVC fe
+  class R_ANA,R_NLD,R_AGD,R_NLG,R_NLS,R_NLD2,R_AUTH,R_DRV,R_CAL,R_INV,UPL be
+  class CLAUDE,GDRIVE,GCAL,SMTP,PPTX ext
+  class FS_NL,FS_TK,MEM store
+  class T1,T2,T3,T4 types
+  class RL ratelimit
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="dot" style="background:#7c3aed"></span><span class="label">User / Browser</span>
+      <div class="desc">Entry point — interacts with the React SPA</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#1d4ed8"></span><span class="label">Frontend (React)</span>
+      <div class="desc">React 19 · TypeScript · Tailwind · Vite 6</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#065f46"></span><span class="label">Backend (Express)</span>
+      <div class="desc">Node.js API server — routes, auth, file processing</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#92400e"></span><span class="label">External Services</span>
+      <div class="desc">Claude AI · Google Drive · Calendar · SMTP · pptxgenjs</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#1e3a5f"></span><span class="label">Server Storage</span>
+      <div class="desc">Filesystem (newsletters, tokens) + in-memory slide buffers</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#3b1f6e"></span><span class="label">Core Types (types.ts)</span>
+      <div class="desc">Shared TypeScript interfaces across front &amp; back end</div>
+    </div>
+    <div class="legend-item">
+      <span class="dot" style="background:#7f1d1d"></span><span class="label">Rate Limiter</span>
+      <div class="desc">express-rate-limit: tiered limits per route group</div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      flowchart: { curve: 'basis', padding: 20 }
+    });
+  </script>
+</body>
+</html>

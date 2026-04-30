@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Pulse — Architecture (Simplified)</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2.5rem 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .diagram-container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 2.5rem 2rem;
+      max-width: 860px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Project Pulse</h1>
+  <p class="subtitle">Simplified Architecture — Agent: Claude Sonnet 4.6</p>
+
+  <div class="diagram-container">
+    <div class="mermaid">
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#1e40af",
+    "primaryTextColor": "#f8fafc",
+    "primaryBorderColor": "#3b82f6",
+    "lineColor": "#475569",
+    "background": "#1e293b",
+    "mainBkg": "#1e293b",
+    "clusterBkg": "#0f172a",
+    "clusterBorder": "#334155",
+    "titleColor": "#f8fafc",
+    "edgeLabelBackground": "#1e293b",
+    "fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    "fontSize": "15px"
+  }
+}}%%
+
+flowchart TD
+
+  USER(["👤 User"])
+
+  subgraph APP["Web Application"]
+    direction LR
+    ANALYZER["📋 Meeting\nAnalyzer"]
+    NEWSLETTER["📰 Newsletter\nArchive"]
+    SCHEDULER["📅 Meeting\nScheduler"]
+  end
+
+  subgraph SERVER["Backend Server"]
+    API["API"]
+  end
+
+  subgraph AI["🤖 AI Agent  ·  Claude Sonnet 4.6"]
+    direction LR
+    A1["Analyze\nMeeting Notes"]
+    A2["Draft\nNewsletter"]
+    A3["Generate\nMeeting Agenda"]
+  end
+
+  subgraph GOOGLE["Google Workspace"]
+    DRIVE["Google Drive"]
+    CALENDAR["Google Calendar\n+ Meet"]
+  end
+
+  EMAIL["✉️ Email\nInvitations"]
+  SLIDES["📊 Slide Deck\n(.pptx)"]
+  STORAGE[("🗄️ Storage\nNewsletters & Tokens")]
+
+  %% Connections
+  USER --> APP
+  APP --> SERVER
+  SERVER --> AI
+  SERVER --> GOOGLE
+  SERVER --> EMAIL
+  SERVER --> SLIDES
+  SERVER --> STORAGE
+
+  ANALYZER -- "notes / file" --> SERVER
+  SERVER -- "projects · status · progress" --> ANALYZER
+
+  NEWSLETTER -- "draft request" --> SERVER
+  SERVER -- "newsletter" --> NEWSLETTER
+  NEWSLETTER -- "save" --> DRIVE
+
+  SCHEDULER -- "meeting details" --> SERVER
+  SERVER -- "event + Meet link" --> SCHEDULER
+  SCHEDULER -- "save invite" --> CALENDAR
+  SCHEDULER -- "send invite" --> EMAIL
+
+  AI --> A1 & A2 & A3
+
+  %% Styles
+  classDef user     fill:#6d28d9,stroke:#a78bfa,color:#fff,rx:50
+  classDef app      fill:#1d4ed8,stroke:#60a5fa,color:#fff
+  classDef server   fill:#065f46,stroke:#34d399,color:#fff
+  classDef ai       fill:#78350f,stroke:#f59e0b,color:#fff
+  classDef google   fill:#1e3a5f,stroke:#7dd3fc,color:#fff
+  classDef support  fill:#3b0764,stroke:#c084fc,color:#fff
+  classDef storage  fill:#1c1917,stroke:#78716c,color:#fff
+
+  class USER user
+  class ANALYZER,NEWSLETTER,SCHEDULER app
+  class API server
+  class A1,A2,A3 ai
+  class DRIVE,CALENDAR google
+  class EMAIL,SLIDES support
+  class STORAGE storage
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      flowchart: { curve: 'basis', padding: 24, nodeSpacing: 40, rankSpacing: 60 }
+    });
+  </script>
+</body>
+</html>

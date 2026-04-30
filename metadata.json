@@ -1,0 +1,5 @@
+{
+  "name": "Meeting Notes AI Analyzer",
+  "description": "Transform meeting notes into project status dashboards and stakeholder newsletters using AI analysis.",
+  "requestFramePermissions": []
+}
