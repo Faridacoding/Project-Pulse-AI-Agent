@@ -2,7 +2,7 @@
 
 An intelligent workflow automation tool that transforms unstructured meeting notes into structured project insights and professional stakeholder newsletters using the Claude Agent SDK.
 
-## Demo
+## 🖥️ Demo
 https://youtu.be/x3K7bJX9zRo 
 
 ## 🚀 Overview
